@@ -68,12 +68,12 @@ Having AWS Key/Secrets may not be required by your AWS/IAM settings.  Errors thr
 Create a task.
 
 ```js
-gulp.task("upload", function() {
+gulp.task("deploy-step-function", function() {
     gulp.src("./dir/with/step_function/*.json")
         .pipe(awssf({
-            //ArnRolePrefix //optional.
-            StepFunctionName: 'STRING_VALUE', //reguired 
-            Recreate: true //optional.
+            //ArnRolePrefix //optional
+            StepFunctionName: 'STRING_VALUE', //required 
+            Recreate: true //optional
         }))
     ;
 });
