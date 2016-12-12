@@ -1,7 +1,7 @@
 # gulp-aws-stepfunctions-deploy
 __Version 0.0.2__
 
-Package version [history](https://www.npmjs.com/package/gulp-aws-stepfunctions-deploy/doku/HISTORY.md)
+Package version [history](https://github.com/YurgenUA/gulp-aws-stepfunctions-deploy/blob/master/doku/HISTORY.md)
 
 This package uses the [aws-sdk (node)](http://aws.amazon.com/sdk-for-node-js/).
 
