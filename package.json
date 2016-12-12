@@ -1,0 +1,35 @@
+{
+  "name": "gulp-aws-stepfunctions-deploy",
+  "version": "0.0.1",
+  "description": "A gulp task to deploy AWS Step Functions.",
+  "main": "index.js",
+  "directories": {
+    "test": "test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/YurgenUA/gulp-aws-stepfunctions-deploy.git"
+  },
+  "keywords": [
+    "gulp",
+    "aws",
+    "Step Functions",
+    "step",
+    "gulpplugin",
+    "gulpfriendly",
+    "function"
+  ],
+  "author": "YurgenUA <fenyuk at gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/YurgenUA/gulp-aws-stepfunctions-deploy/issues"
+  },
+  "homepage": "https://github.com/YurgenUA/gulp-aws-stepfunctions-deploy",
+  "dependencies": {
+    "aws-sdk": "^2.7.13",
+    "gulp-util": "^3.0.7",
+    "https-proxy-agent": "^1.0.0",
+    "through2": "^2.0.3",
+    "underscore": "^1.8.3"
+  }
+}
