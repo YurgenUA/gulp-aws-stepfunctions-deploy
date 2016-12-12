@@ -1,5 +1,7 @@
 # gulp-aws-stepfunctions-deploy
-__Version 0.0.1__
+__Version 0.0.2__
+
+Package version [history](https://www.npmjs.com/package/gulp-aws-stepfunctions-deploy/doku/HISTORY.md)
 
 This package uses the [aws-sdk (node)](http://aws.amazon.com/sdk-for-node-js/).
 
@@ -75,6 +77,13 @@ gulp.task("deploy-step-function", function() {
             StepFunctionName: 'STRING_VALUE', //required 
             Recreate: true //optional
         }))
+    .on( "end", function() { 
+            console.log('end ');
+        })
+    .on( "error", function( err ) {
+        console.log( err );
+    })
+
     ;
 });
 ```

@@ -4,7 +4,6 @@
     gulp plugin for uploading Step Functions to the AWS
 ****/
 
-const es = require('event-stream');
 const gutil = require('gulp-util');
 const AWS = require('aws-sdk');
 const path = require('path');
@@ -63,6 +62,7 @@ var _remove_state_machine = function (deploy_options) {
                 if (err) 
                     return reject("StepFunctions deleteStateMachine Error: " + err.stack);
                 else
+                    //state_machine is in deleting state for some time, so need to wait
                     setTimeout(() => {
                         return resolve();
                     }, 60000);
@@ -79,6 +79,10 @@ var _deploy_state_machine = function (deploy_options) {
     let deploy_options_copy = deploy_options;
 
     return new Promise((resolve, reject) => {
+        if (!deploy_options_copy.file){
+            return reject(new gutil.PluginError(PLUGIN_NAME, 'Specified Step Function json file not found :('));
+        }
+
         var params = {
             definition: deploy_options_copy.file._contents.toString() ,
             name: deploy_options.function_name,
