@@ -1,5 +1,13 @@
 # gulp-aws-stepfunctions-deploy
-__Version 0.0.2__
+__Version 0.0.3__
+
+
+[![Build Status](https://travis-ci.org/dwyl/aws-sdk-mock.svg?branch=master)](https://github.com/YurgenUA/gulp-aws-stepfunctions-deploy)
+[![Dependency Status](https://david-dm.org/dwyl/aws-sdk-mock.svg)](https://github.com/YurgenUA/gulp-aws-stepfunctions-deploy)
+[![devDependency Status](https://david-dm.org/dwyl/aws-sdk-mock/dev-status.svg)](https://github.com/YurgenUA/gulp-aws-stepfunctions-deploy#info=devDependencies)
+
+[![NPM](https://nodei.co/npm-dl/aws-sdk-mock.png?months=3)](https://github.com/YurgenUA/gulp-aws-stepfunctions-deploy/)
+
 
 Package version [history](https://github.com/YurgenUA/gulp-aws-stepfunctions-deploy/blob/master/doku/HISTORY.md)
 
