@@ -2,7 +2,7 @@
 
 const gulp = require('gulp');
 
-gulp.task('unit-testing', function () {
+gulp.task('unit-test', function () {
     return gulp.src([
         './tests/unit/**/*.js'
     ])
