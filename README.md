@@ -76,13 +76,9 @@ Having AWS Key/Secrets may not be required by your AWS/IAM settings.  Errors thr
 Create a task.
 
 ```js
-gulp.task("deploy-step-function", function() {
-    gulp.src("./dir/with/step_function/*.json")
-        .pipe(awssf({
-            //ArnRolePrefix //optional
-            StepFunctionName: 'STRING_VALUE', //required 
-            Recreate: true //optional
-        }))
+gulp.task("deploy-step-function", () => {
+    return gulp.src("./dir/with/step_functions/*.json")
+        .pipe(awssf({}))
     .on( "end", function() { 
             console.log('end ');
         })
@@ -94,27 +90,49 @@ gulp.task("deploy-step-function", function() {
 });
 ```
 
+### Step Function files
+
+json file format following:
+
+```json
+{
+  "function_name": "step-function-parallel",
+  "recreate": true,
+  "role_arn" : "StatesExecutionRole-eu-west-1",
+  "function_body": {
+      ...
+  }
+}
+```
+
 
 ## Options
 
-**ArnRolePrefix** *(optional)*
+**role_arn** *(optional)*
 
 Type: `string`
 
 Set IAM Roled under which function executes. You can either specify desired IAM Role and omit to use pre-created `StatesExecutionRole-${gconfig.region}`
 
 
-**StepFunctionName** *(required)*
+**function_name** *(required)*
 
 Type: `string`
 
 Step Function name.
 
-**Recreate** *(optional)*
+**recreate** *(optional)*
 
 Type: `bool`
 
 Default is false. If set, code check (and remove) function with name specified, before create new one.
+
+**function_body** *(optional)*
+
+Type: `string`
+
+Function body content
+
 
 ### gulp-aws-stepfunctions-deploy-plugin options
 

@@ -1,3 +1,9 @@
+__Version 0.1.0__
+- Breaking change! Now supporting multiple Test Functions deployment (all params moved from gulp tasks to json file)
+- extened Test Function json file to have all specific params (function nema, role arn, recreate etc.)
+- fixed AWS error swallowing (now errors go to console and visible for user)
+- added couple Step Functions sample files
+
 __Version 0.0.3__
 - added placeholders for unit-tests
 - added integration with Travis

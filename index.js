@@ -43,33 +43,36 @@ var _remove_state_machine = function (deploy_options) {
         return new Promise((res, rej) => {
             stepfunctions.listStateMachines({}, function (err, data) {
                 if (err) {
-                    return rej("StepFunctions listStateMachines Error: " + err.stack);
+                    return rej(`StepFunctions listStateMachines Error:${err}\n${err.stack}`);
                 }
                 else
-                var existingMachine = _.find(data.stateMachines, it => {return it.name == deploy_options_copy.function_name})
+                    var existingMachine = _.find(data.stateMachines, it => { return it.name == deploy_options_copy.function_name })
                 if (!existingMachine)
                     return res();
                 else
                     return res(existingMachine.stateMachineArn);
             });
         })
-        .then((existingMachineArn) => {
-            if (!existingMachineArn){
-                return resolve();
-            }
-            else{
-                stepfunctions.deleteStateMachine({stateMachineArn: existingMachineArn}, function(err, data) {
-                if (err) 
-                    return reject("StepFunctions deleteStateMachine Error: " + err.stack);
-                else
-                    //state_machine is in deleting state for some time, so need to wait
-                    setTimeout(() => {
-                        return resolve();
-                    }, 60000);
-                });
+            .then((existingMachineArn) => {
+                if (!existingMachineArn) {
+                    return resolve();
+                }
+                else {
+                    stepfunctions.deleteStateMachine({ stateMachineArn: existingMachineArn }, function (err, data) {
+                        if (err)
+                            return reject("StepFunctions deleteStateMachine Error: " + err.stack);
+                        else
+                            //state_machine is in deleting state for some time, so need to wait
+                            setTimeout(() => {
+                                return resolve();
+                            }, 60000);
+                    });
 
-            }
-        })
+                }
+            })
+            .catch(err => {
+                return reject(new gutil.PluginError(PLUGIN_NAME, "Error: " + err));
+            });
 
     });
 }
@@ -79,12 +82,12 @@ var _deploy_state_machine = function (deploy_options) {
     let deploy_options_copy = deploy_options;
 
     return new Promise((resolve, reject) => {
-        if (!deploy_options_copy.file){
+        if (!deploy_options_copy.function_body) {
             return reject(new gutil.PluginError(PLUGIN_NAME, 'Specified Step Function json file not found :('));
         }
 
         var params = {
-            definition: deploy_options_copy.file._contents.toString() ,
+            definition: deploy_options_copy.function_body,
             name: deploy_options.function_name,
             roleArn: deploy_options_copy.role_arn
         };
@@ -101,16 +104,7 @@ var _deploy_state_machine = function (deploy_options) {
 
 var _deploy = function (options) {
 
-    let arn_role_prefix = options.ArnRolePrefix || `StatesExecutionRole-${gconfig.region}`;
-    
-    if (!_.has(options, 'Recreate') && !options.Recreate) {
-        options.Recreate = false;
-    }
-    
-
-    let step_function_name = options.StepFunctionName;
-
-    let sf_file;
+    let sf_files = [];
 
     return through.obj((file, enc, cb) => {
 
@@ -120,29 +114,55 @@ var _deploy = function (options) {
         if (file.isStream()) {
             return cb(new gutil.PluginError(PLUGIN_NAME, 'Streaming is not supported'));
         }
-        if (!sf_file) {
-            sf_file = file;
-        }
+        sf_files.push(file);
         cb();
 
     }, cb => {
-        let deploy_options = {file: sf_file, function_name: step_function_name, recreate: options.Recreate};
 
-        return _remove_state_machine(deploy_options)
-            .then(() =>{
-                return _get_iam_role(arn_role_prefix);
-            })
-            .then(arn => {
-                deploy_options.role_arn = arn; 
-                return _deploy_state_machine(deploy_options)
-            }).then((res) => {
-                console.log('State Machine result:' + JSON.stringify(res));
-                return cb(null);
-            })
+        let promises = [];
+        //iterating over sf_files array
+        sf_files.forEach(it => {
+            promises.push(new Promise((resolve, reject) => {
+                let jsoned_file = JSON.parse(it._contents.toString());
+                let role_arn = jsoned_file.role_arn || `StatesExecutionRole-${gconfig.region}`;
+                let recreate = jsoned_file.recreate || false;
 
-            .catch(err => {
-                return cb(new gutil.PluginError(PLUGIN_NAME, "Error: " + err));
-            });
+                let deploy_options = {
+                    function_body: JSON.stringify(jsoned_file.function_body),
+                    function_name: jsoned_file.function_name,
+                    recreate: recreate,
+                    role_arn: role_arn,
+                };
+
+                return _remove_state_machine(deploy_options)
+                    .then(() => {
+                        return _get_iam_role(deploy_options.role_arn);
+                    })
+                    .then(arn => {
+                        deploy_options.role_arn = arn;
+                        return _deploy_state_machine(deploy_options);
+                    }).then((res) => {
+                        console.log('State Machine result:' + JSON.stringify(res));
+                        return resolve(null);
+                    })
+
+                    .catch(err => {
+                       return reject(new gutil.PluginError(PLUGIN_NAME, "Error: " + err));
+                    });
+            }));
+
+        });
+
+        return Promise.all(promises)
+        .then(() => {
+            console.log('All Step Functions creation finished without errors!');
+            return cb(null);
+        })
+        .catch(err => {
+            console.log('Some Step Functions creation process failed');
+            return cb(err);
+
+        });
 
     });
 }

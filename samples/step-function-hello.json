@@ -1,0 +1,14 @@
+{
+  "function_name": "step-function-hello",  
+  "function_body": {
+    "Comment": "A modified Hello World example of the Amazon States Language using an AWS Lambda Function" ,
+    "StartAt": "HelloWorld",
+    "States": {
+      "HelloWorld": {
+        "Type": "Task",
+        "Resource": "arn:aws:lambda:REGION:ACCOUNT_ID:function:FUNCTION_NAME",
+        "End": true
+      }
+    }
+  }
+}
