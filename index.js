@@ -126,12 +126,11 @@ var _deploy = function (options) {
                 let jsoned_file = JSON.parse(it._contents.toString());
                 let role_arn = jsoned_file.role_arn || `StatesExecutionRole-${gconfig.region}`;
                 let recreate = jsoned_file.recreate || false;
-
                 let deploy_options = {
-                    function_body: JSON.stringify(jsoned_file.function_body),
-                    function_name: jsoned_file.function_name,
+                    function_body: eval('`'+ JSON.stringify(jsoned_file.function_body) +'`'),
+                    function_name: eval('`'+ jsoned_file.function_name +'`'),
                     recreate: recreate,
-                    role_arn: role_arn,
+                    role_arn: eval('`'+ role_arn +'`'),
                 };
 
                 return _remove_state_machine(deploy_options)

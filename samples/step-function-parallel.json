@@ -1,7 +1,7 @@
 {
   "function_name": "step-function-parallel",
   "recreate": true,
-  "role_arn" : "StatesExecutionRole-eu-west-1",
+  "role_arn" : "StatesExecutionRole-${process.env.AWS_REGION}",
   "function_body": {
     "Comment": "An example of the Amazon States Language using a parallel state to execute two branches at the same time.",
     "StartAt": "Parallel",

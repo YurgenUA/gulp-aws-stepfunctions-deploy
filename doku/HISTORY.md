@@ -1,3 +1,6 @@
+__Version 0.1.1__
+- Test Function json file improvements. Treating "function_name", "role_arn", "function_body" with ES6 template string mechanism (see http://es6-features.org/#StringInterpolation)
+
 __Version 0.1.0__
 - Breaking change! Now supporting multiple Test Functions deployment (all params moved from gulp tasks to json file)
 - extened Test Function json file to have all specific params (function nema, role arn, recreate etc.)

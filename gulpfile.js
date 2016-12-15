@@ -18,6 +18,8 @@ gulp.task('unit-test', function () {
 
 var awssf = require('./index.js')({});
 gulp.task('deploy-step-functions', () => {
+    process.env.STEP_FUNCTIONS_TYPE = "Task";
+
     return gulp.src('./samples/step-function-*.json')
         .pipe(awssf({}))
      .on( 'end', function() { 

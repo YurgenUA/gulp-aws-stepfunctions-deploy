@@ -5,7 +5,7 @@
     "StartAt": "HelloWorld",
     "States": {
       "HelloWorld": {
-        "Type": "Task",
+        "Type": "${process.env.STEP_FUNCTIONS_TYPE}",
         "Resource": "arn:aws:lambda:REGION:ACCOUNT_ID:function:FUNCTION_NAME",
         "End": true
       }
