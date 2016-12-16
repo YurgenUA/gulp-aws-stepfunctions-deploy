@@ -1,5 +1,5 @@
 # gulp-aws-stepfunctions-deploy
-__Version 0.1.0__
+__Version 0.1.1__
 
 
 [![Build Status](https://travis-ci.org/YurgenUA/gulp-aws-stepfunctions-deploy.svg?branch=master)](https://github.com/YurgenUA/gulp-aws-stepfunctions-deploy)
@@ -104,7 +104,7 @@ json file format following:
   }
 }
 ```
-
+More samples [here](https://github.com/YurgenUA/gulp-aws-stepfunctions-deploy/blob/master/samples)
 
 ## Options
 
@@ -133,6 +133,11 @@ Type: `string`
 
 Function body content
 
+Be aware that "function_name", "role_arn", "function_body" can have pieces with ES6 template string mechanism (see http://es6-features.org/#StringInterpolation). 
+This can be used for string customization via different substituions (for instance, using Environment Variables)
+Sample: 
+  "role_arn" : "StatesExecutionRole-eu-${required('process').env.AWS_REGION}",
+Some interesting customization can be done in "function_body" as well.
 
 ### gulp-aws-stepfunctions-deploy-plugin options
 
