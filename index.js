@@ -36,45 +36,80 @@ var _get_iam_role = function (arn_role_prefix) {
 var _remove_state_machine = function (deploy_options) {
     let deploy_options_copy = deploy_options;
     let stepfunctions = new AWS.StepFunctions();
+    const allowedEscape = 'allowedEscape';
+    //check if such step function is already exists
     return new Promise((resolve, reject) => {
         if (!deploy_options_copy.recreate)
             return resolve();
 
-        return new Promise((res, rej) => {
-            stepfunctions.listStateMachines({}, function (err, data) {
-                if (err) {
-                    return rej(`StepFunctions listStateMachines Error:${err}\n${err.stack}`);
-                }
-                else
-                    var existingMachine = _.find(data.stateMachines, it => { return it.name == deploy_options_copy.function_name })
-                if (!existingMachine)
-                    return res();
-                else
-                    return res(existingMachine.stateMachineArn);
-            });
-        })
-            .then((existingMachineArn) => {
-                if (!existingMachineArn) {
-                    return resolve();
-                }
-                else {
-                    stepfunctions.deleteStateMachine({ stateMachineArn: existingMachineArn }, function (err, data) {
-                        if (err)
-                            return reject("StepFunctions deleteStateMachine Error: " + err.stack);
-                        else
-                            //state_machine is in deleting state for some time, so need to wait
-                            setTimeout(() => {
-                                return resolve();
-                            }, 60000);
-                    });
-
-                }
+        stepfunctions.listStateMachines({}, function (err, data) {
+            if (err) {
+                return reject(`StepFunctions listStateMachines Error:${err}\n${err.stack}`);
+            }
+            else
+                var existingMachine = _.find(data.stateMachines, it => { return it.name == deploy_options_copy.function_name })
+            if (!existingMachine)
+                return reject(allowedEscape);
+            else
+                return resolve(existingMachine.stateMachineArn);
+        });
+    })
+    //collect all running executions for state machine and delete them
+    .then(existingMachineArn => {
+        let promises = [];
+        return new Promise((resolve, reject) => {
+                stepfunctions.listExecutions({ stateMachineArn: existingMachineArn, statusFilter: 'RUNNING' }, (err, data) => {
+                    if (err){
+                        return reject("StepFunctions listExecutions Error: " + err.stack);
+                    }
+                    data.executions.forEach(it => promises.push( 
+                            new Promise((res2, rej2) => {
+                                stepfunctions.stopExecution( {executionArn: it.executionArn, cause: 're-deployment'}, (err, data) => {
+                                    if (err) {
+                                        console.log(err, err.stack);
+                                        return rej2(err);
+                                    }
+                                    res2();
+                                })
+                            }) 
+                    ));
+                    return resolve(existingMachineArn);
+                })
             })
-            .catch(err => {
-                return reject(new gutil.PluginError(PLUGIN_NAME, "Error: " + err));
+            .then(existingMachineArn => {
+                if(promises.length == 0){
+                    return existingMachineArn;
+                }
+
+                return Promise.all(promises)
+                .then(() => {
+                    return existingMachineArn;
+                })
             });
 
+    })
+    //delete state machine itself
+    .then(existingMachineArn => {
+        return new Promise((resolve, reject) => {
+                stepfunctions.deleteStateMachine({ stateMachineArn: existingMachineArn }, function (err, data) {
+                    if (err)
+                        return reject("StepFunctions deleteStateMachine Error: " + err.stack);
+                    else
+                        //state_machine is in deleting state for some time, so need to wait
+                        setTimeout(() => {
+                            return resolve();
+                        }, 60000);
+                });
+
+        })
+    })
+    .catch(err => {
+        if (err === allowedEscape){
+            return Promise.resolve();
+        }
+        return Promise.reject(new gutil.PluginError(PLUGIN_NAME, "Error: " + err));
     });
+
 }
 
 
