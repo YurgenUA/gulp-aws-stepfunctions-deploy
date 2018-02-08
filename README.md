@@ -97,7 +97,7 @@ json file format following:
 ```json
 {
   "function_name": "step-function-parallel",
-  "recreate": true,
+  "recreate": false,
   "role_arn" : "StatesExecutionRole-eu-west-1",
   "function_body": {
       ...
@@ -125,7 +125,9 @@ Step Function name.
 
 Type: `bool`
 
-Default is false. If set, code check (and remove) function with name specified, before create new one.
+If set, check existence, stop all running instances and remove function with name specified, before create new one.
+If not set, update existent function or create if absent.
+Default is false. 
 
 **function_body** *(optional)*
 

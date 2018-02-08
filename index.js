@@ -37,11 +37,13 @@ var _remove_state_machine = function (deploy_options) {
     let deploy_options_copy = deploy_options;
     let stepfunctions = new AWS.StepFunctions();
     const allowedEscape = 'allowedEscape';
+
+    if (!deploy_options_copy.recreate){
+        return Promise.resolve();
+    }
+
     //check if such step function is already exists
     return new Promise((resolve, reject) => {
-        if (!deploy_options_copy.recreate)
-            return resolve();
-
         stepfunctions.listStateMachines({}, function (err, data) {
             if (err) {
                 return reject(`StepFunctions listStateMachines Error:${err}\n${err.stack}`);
@@ -113,7 +115,7 @@ var _remove_state_machine = function (deploy_options) {
 }
 
 
-var _deploy_state_machine = function (deploy_options) {
+var _deploy_state_machine = function (deploy_options, existing_state_machines) {
     let deploy_options_copy = deploy_options;
 
     return new Promise((resolve, reject) => {
@@ -121,20 +123,51 @@ var _deploy_state_machine = function (deploy_options) {
             return reject(new gutil.PluginError(PLUGIN_NAME, 'Specified Step Function json file not found :('));
         }
 
-        var params = {
-            definition: deploy_options_copy.function_body,
-            name: deploy_options.function_name,
-            roleArn: deploy_options_copy.role_arn
-        };
         let stepfunctions = new AWS.StepFunctions();
-        stepfunctions.createStateMachine(params, function (err, data) {
+        let deployed_state_machine = existing_state_machines.find(x => x.name ===  deploy_options.function_name);
+        if (deployed_state_machine){
+            var params = {
+                stateMachineArn: deployed_state_machine.arn,
+                definition: deploy_options_copy.function_body
+            }
+            stepfunctions.updateStateMachine(params, function (err, data) {
+                if (err) {
+                    return reject("StepFunctions createStateMachine Error: " + err.stack);
+                }
+                else
+                    return resolve(data);
+            });
+        }
+        else {
+            var params = {
+                definition: deploy_options_copy.function_body,
+                name: deploy_options.function_name,
+                roleArn: deploy_options_copy.role_arn
+            };
+            stepfunctions.createStateMachine(params, function (err, data) {
+                if (err) {
+                    return reject("StepFunctions createStateMachine Error: " + err.stack);
+                }
+                else
+                    return resolve(data);
+            });
+        }
+    });
+}
+
+var _list_state_machines = function () {
+    return new Promise((resolve, reject) => {
+
+        let stepfunctions = new AWS.StepFunctions();
+        stepfunctions.listStateMachines({}, function (err, data) {
             if (err) {
-                return reject("StepFunctions createStateMachine Error: " + err.stack);
+                return reject("StepFunctions listStateMachines Error: " + err.stack);
             }
             else
-                return resolve(data);
+                return resolve(data.stateMachines.map(x => {return {name: x.name, arn: x.stateMachineArn}}));
         });
     });
+    
 }
 
 var _deploy = function (options) {
@@ -167,14 +200,19 @@ var _deploy = function (options) {
                     recreate: recreate,
                     role_arn: eval('`'+ role_arn +'`'),
                 };
+                let existing_state_machines;
 
                 return _remove_state_machine(deploy_options)
                     .then(() => {
+                        return _list_state_machines();
+                    })
+                    .then((data) => {
+                        existing_state_machines = data;
                         return _get_iam_role(deploy_options.role_arn);
                     })
                     .then(arn => {
                         deploy_options.role_arn = arn;
-                        return _deploy_state_machine(deploy_options);
+                        return _deploy_state_machine(deploy_options, existing_state_machines);
                     }).then((res) => {
                         console.log('State Machine result:' + JSON.stringify(res));
                         return resolve(null);
@@ -189,11 +227,11 @@ var _deploy = function (options) {
 
         return Promise.all(promises)
         .then(() => {
-            console.log('All Step Functions creation finished without errors!');
+            console.log('All Step Functions manipulation process finished without errors!');
             return cb(null);
         })
         .catch(err => {
-            console.log('Some Step Functions creation process failed');
+            console.log('Some Step Functions manipulation process failed');
             return cb(err);
 
         });
