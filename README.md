@@ -1,5 +1,5 @@
 # gulp-aws-stepfunctions-deploy
-__Version 0.1.1__
+__Version 0.2.0__
 
 
 [![Build Status](https://travis-ci.org/YurgenUA/gulp-aws-stepfunctions-deploy.svg?branch=master)](https://github.com/YurgenUA/gulp-aws-stepfunctions-deploy)

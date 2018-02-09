@@ -1,3 +1,7 @@
+__Version 0.2.0__
+- StepFunction deploy improvement. Updating (see UpdateStateMachine(...)) if user does not force recreation (see 'recreate' flag)
+
+
 __Version 0.1.1__
 - Test Function json file improvements. Treating "function_name", "role_arn", "function_body" with ES6 template string mechanism (see http://es6-features.org/#StringInterpolation)
 
