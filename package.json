@@ -1,6 +1,6 @@
 {
   "name": "gulp-aws-stepfunctions-deploy",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "A gulp task to deploy AWS Step Functions.",
   "main": "index.js",
   "directories": {

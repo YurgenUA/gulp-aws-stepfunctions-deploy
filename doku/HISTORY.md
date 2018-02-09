@@ -1,4 +1,4 @@
-__Version 0.2.0__
+__Version 0.2.1__
 - StepFunction deploy improvement. Updating (see UpdateStateMachine(...)) if user does not force recreation (see 'recreate' flag)
 
 
